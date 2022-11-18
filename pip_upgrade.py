@@ -52,5 +52,10 @@ conflict = os.popen('pip check').readlines()
 for i in conflict:
     j = i.split('you have ')[-1]
     j = j.split(' ')[0]
-    m = update_dic['Package'].index(j)
-    os.system(f"pip install  {j}=={update_dic['Old_version'][m]}")
+    if f'{j}==' in i:
+        s = i.split('requirement ')[-1]
+        s = s.split(';')[0]
+        os.system(f"pip install {s}")
+    else:
+        m = update_dic['Package'].index(j)
+        os.system(f"pip install  {j}=={update_dic['Old_version'][m]}")

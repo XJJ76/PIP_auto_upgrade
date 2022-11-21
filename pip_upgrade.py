@@ -49,12 +49,15 @@ for i in update_dic['Package']:
 
 #Solve packages version conflict
 conflict = os.popen('pip check').readlines()
+
 for i in conflict:
     j = i.split('you have ')[-1]
     j = j.split(' ')[0]
     if f'{j}==' in i:
         s = i.split('requirement ')[-1]
-        s = s.split(';')[0]
+        s = s.split(' ')[0]
+        s = s.rstrip(',')
+        s = s.rstrip(';')
         os.system(f"pip install {s}")
     else:
         m = update_dic['Package'].index(j)

@@ -49,7 +49,8 @@ for i in update_dic['Package']:
 
 #Solve packages version conflict
 conflict = os.popen('pip check').readlines()
-
+if 'No No broken requirements' in conflict[0]:
+    exit
 for i in conflict:
     j = i.split('you have ')[-1]
     j = j.split(' ')[0]

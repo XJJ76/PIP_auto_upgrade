@@ -48,18 +48,36 @@ for i in update_dic['Package']:
     os.system(f'pip install {i} --upgrade --no-cache-dir ')
 
 #Solve packages version conflict
+print('\n')
+print('Now solve conflict!!')
+print('\n')
 conflict = os.popen('pip check').readlines()
 if 'No broken requirements' in conflict[0]:
     exit
+conflict_p = []
+comp = ['>','>=','==','<','<=']
+def get_first_comp(s):
+    l = []
+    for i in comp:
+        if i in s:
+            l.append(s.index(i))
+    return min(l)
 for i in conflict:
-    j = i.split('you have ')[-1]
-    j = j.split(' ')[0]
-    if f'{j}==' in i:
-        s = i.split('requirement ')[-1]
-        s = s.split(' ')[0]
-        s = s.rstrip(',')
-        s = s.rstrip(';')
-        os.system(f"pip install {s}")
+    if 'which is not installed' not in i:
+        j = i.split('has requirement ')[-1]
+        r = get_first_comp(j)
+        if j[:r] not in conflict_p:
+            conflict_p.append(j[:r])
     else:
-        m = update_dic['Package'].index(j)
-        os.system(f"pip install  {j}=={update_dic['Old_version'][m]}")
+        i = i.split(',')[0]
+        j = i.split('requires ')[-1]
+        conflict_p.append(j)
+for i in conflict_p:
+    if i in update_dic['Package'] or i.capitalize() in update_dic['Package']:
+        try:
+            m = update_dic['Package'].index(i)
+        except:
+            m = update_dic['Package'].index(i.capitalize())
+        os.system(f"pip install  {i}=={update_dic['Old_version'][m]}")
+    else:
+        os.system(f"pip install {i}")

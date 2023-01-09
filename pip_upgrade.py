@@ -4,7 +4,7 @@ date_s = str(date.today())
 
 # full backup
 try:
-    os.mkdir('D:\\Whl_list_backup') # The backup path can be changed by yourself.
+    os.mkdir('D:\\Whl_list_backup') # The backup path can be changed by yourself. In linux, "D:\\Whl_list_backup" can be replaced by "/home/user/whl_list_backup".
 
 except:
       None

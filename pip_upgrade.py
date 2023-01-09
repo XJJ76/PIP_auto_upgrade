@@ -40,7 +40,7 @@ if 'pip' in update_dic['Package']:
     os.system('python -m pip install pip --upgrade')
     n = update_dic['Package'].index('pip')
     update_dic['Package'].remove('pip')
-    upddate_dic['Old_version'].remove(upddate_dic['Old_version'][n])
+    update_dic['Old_version'].remove(update_dic['Old_version'][n])
     update_dic['Latest_version'].remove(update_dic['Latest_version'][n])
 
 ##Update other packages

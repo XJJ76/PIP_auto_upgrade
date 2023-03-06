@@ -1,83 +1,68 @@
 import os
-from datetime import date
-date_s = str(date.today())
+installed_packages_info = os.popen(f"pip list").readlines()
+old_packages = {}
+for i in installed_packages_info[2:]:
+    x = i[:-1].split(' ')
+    l = [j for j in x if j != '']
+    old_packages[l[0]] = l[1]
+outdate_info = os.popen( f'python -m pip list -o')
+outdate_list = outdate_info.readlines()
+update_packages = {}
 
-# full backup
-try:
-    os.mkdir('D:\\Whl_list_backup') # The backup path can be changed by yourself. In linux, "D:\\Whl_list_backup" can be replaced by "/home/user/whl_list_backup".
+for i in outdate_list[2:]:
+    x = i[:-1].split(' ')
+    l = [j for j in x if j != '']
+    update_packages[l[0]] = l[2]
 
-except:
-      None
-os.chdir('D:\\Whl_list_backup')
-os.popen(f'pip freeze > {date_s}_fullbackup.txt')
+for i in update_packages.keys():
+    if i == 'pip':
+        os.system(f"python -m pip install pip --upgrade --no-cache-dir")
+    else:
+        os.system(f'pip install {i}=={update_packages[i]} --no-cache-dir ')
 
-# Get the outdated packages
-outdate_list = os.popen( f'python -m pip list -o')
-info = outdate_list.readlines()
-update_dic = {'Package': [], 'Old_version': [], 'Latest_version': []}
-
-for i in info[2:]:
-    i = i.rstrip('\n')
-    l = i.split(' ')
-    l = [j for j in l if j!='']
-    update_dic['Package'].append(l[0])
-    update_dic['Old_version'].append(l[1])
-    update_dic['Latest_version'].append(l[2])
-# backup old version
-backup = []
-n = len(update_dic['Package'])
-for i in range(n):
-    item = update_dic['Package'][i] + '\t' + update_dic['Old_version'][i] + '\n'
-    backup.append(item)
-
-with open(f'{date_s}_old_version.txt', 'w') as file:
-    file.writelines(backup)
-
-# Update package
-
-##pip upgrade
-if 'pip' in update_dic['Package']:
-    os.system('python -m pip install pip --upgrade')
-    n = update_dic['Package'].index('pip')
-    update_dic['Package'].remove('pip')
-    update_dic['Old_version'].remove(update_dic['Old_version'][n])
-    update_dic['Latest_version'].remove(update_dic['Latest_version'][n])
-
-##Update other packages
-for i in update_dic['Package']:
-    os.system(f'pip install {i} --upgrade --no-cache-dir ')
-
-#Solve packages version conflict
-print('\n')
-print('Now solve conflict!!')
-print('\n')
-conflict = os.popen('pip check').readlines()
-if 'No broken requirements' in conflict[0]:
+#Solve conflict
+print('\nNow solve conflict!!\n')
+conflict1 = os.popen('pip check').readlines()
+if 'No broken requirements' in conflict1[0]:
+    print('Congratulation! No conflict found!')
     exit
 conflict_p = []
-comp = ['>','>=','==','<','<=']
+comp = ['>','>=','==','<','<=','~=']
+
 def get_first_comp(s):
     l = []
     for i in comp:
         if i in s:
             l.append(s.index(i))
     return min(l)
-for i in conflict:
-    if 'which is not installed' not in i:
-        j = i.split('has requirement ')[-1]
-        r = get_first_comp(j)
-        if j[:r] not in conflict_p:
-            conflict_p.append(j[:r])
-    else:
-        i = i.split(',')[0]
-        j = i.split('requires ')[-1]
-        conflict_p.append(j)
+
+for i in conflict1:
+        if 'which is not installed' not in i:
+            j = i.split('has requirement ')[-1]
+            r = get_first_comp(j)
+            if j[:r] not in conflict_p:
+                conflict_p.append(j[:r])
+        else:
+            i = i.split(',')[0]
+            j = i.split('requires ')[-1]
+            conflict_p.append(j)
 for i in conflict_p:
-    if i in update_dic['Package'] or i.capitalize() in update_dic['Package']:
-        try:
-            m = update_dic['Package'].index(i)
-        except:
-            m = update_dic['Package'].index(i.capitalize())
-        os.system(f"pip install  {i}=={update_dic['Old_version'][m]}")
-    else:
-        os.system(f"pip install {i}")
+    p_list = [i, i.replace('-',"_"),i.capitalize()]
+    for j in p_list:
+        if j in old_packages.keys():
+            os.system(f'pip install {j}=={old_packages[j]} --no-cache-dir ')
+#Solve conflict second round
+print('\nRecheck conflict!!\n')
+
+conflict2 = os.popen('pip check').readlines()
+
+if 'No broken requirements' in conflict2[0]:
+    print('Congratulation! No conflict found!')
+    exit
+conflict_rep = []
+for i in update_packages.keys():
+    for j in conflict2:
+        if i in j:
+            conflict_rep.append(i)
+for i in conflict_rep:
+    os.system(f'pip install {i}=={old_packages[i]} --no-cache-dir ')

@@ -15,10 +15,6 @@ for i in outdate_list[2:]:
     l = [j for j in x if j != '']
     update_packages[l[0]] = l[2]
 
-if "PySimpleGUI" in update_packages:
-    update_packages.pop("PySimpleGUI")
-
-
 
 for i in update_packages.keys():
     if i == 'pip':
